@@ -80,71 +80,55 @@ def list_parts():
     for part_id in db_parts.keys():
         display_list.append((part_id, db_parts[part_id][0], db_parts[part_id][1]))
     format_str = "{: <5} | {: ^10} | {: >15}"
-    print("\n Parts List\n")
+    print("\nParts List\n")
     column_output(display_list, col_parts, format_str)
 
-    input("\nPress Enter to continue.")
+
 
 def list_services():
     # List the ID, name, cost of all services
-    pass  # REMOVE this line once you have some function code (a function must have one line of code, so this temporary line keeps Python happy so you can run the code)
+    display_list = []
+    for service_id in db_services.keys():
+        display_list.append((service_id, db_services[service_id][0], db_services[service_id][1]))
+    format_str = "{: <5} | {: ^20} | {: >15}"
+    print("\nServices List\n")
+    column_output(display_list, col_services, format_str)
+
+
 
 def add_customer_name():
     valid = False
-    first_name = input("Enter new customer name: ").strip(" ")
-    if len(first_name.split()) == 1:
-        last_name = input("Enter new customer last name: ").strip(" ")
-        if first_name.isalpha() and last_name.isalpha():
-            valid = True
-        full_name = first_name + " " + last_name
-    else:
-        valid = False not in [name.isalpha() for name in first_name.split(" ")]
-        full_name = first_name
+    first_name = input("Enter new customer first name(or X to return menu): ").strip(" ")
+    if back_to_menu(first_name.strip("").upper()):
+        return valid, first_name
+
+    last_name = input("Enter new customer last name(or X to return menu): ").strip(" ")
+    if back_to_menu(last_name.strip(" ").upper()):
+        return valid, last_name
+
+    if first_name.isalpha() and last_name.isalpha():
+        valid = True
+    full_name = first_name + " " + last_name
     return valid, full_name.title()
 
 def add_customer_phone_number():
     valid = False
-    phone_number = input("Enter new customer phone number: ")
+    phone_number = input("Enter new customer phone number(or X to return menu): ")
     if phone_number.isdigit():
         valid = True
     return valid, phone_number
 
 def add_customer_email():
     valid = False
-    email = input("Enter new customer email: ")
+    email = input("Enter new customer email(or X to return menu): ")
     if re.match(r"[^@]+@[^@]+\.[^@]+", email):
         valid = True
     return valid, email
 
-def add_customer():
+def add_customer(id, name, phone, email):
     # Add a customer to the db_customers database, use the next_id to get an id for the customer.
-    added = False
-    valid_customer = {"name": None, "phone": None, "email": None}
-    while not added:
-        new_customer_id = next_id(db_customers)
-
-        if valid_customer["name"] is None or valid_customer["name"] is False:
-            if valid_customer["name"] is False:
-                print("The new customer name is not valid. Please type the name in letters.\n")
-            valid_name, new_customer_name = add_customer_name()
-            valid_customer["name"] = valid_name
-
-        if valid_customer["phone"] is None or valid_customer["phone"] is False:
-            if valid_customer["phone"] is False:
-                print("The new customer phone number is not valid. Please type the phone number in digit.\n")
-            valid_phone, new_customer_phone = add_customer_phone_number()
-            valid_customer["phone"] = valid_phone
-
-        if valid_customer["email"] is None or valid_customer["email"] is False:
-            if valid_customer["email"] is False:
-                print("The new customer email address is not valid. Please type the email in this format 'example@domain.com'\n")
-            valid_email, new_customer_email = add_customer_email()
-            valid_customer["email"] = valid_email
-
-        if False not in valid_customer.values():
-            db_customers[new_customer_id] = {"details": [new_customer_name, new_customer_phone, new_customer_email]}
-            added = True
-            print(f"New Customer-{new_customer_id} {new_customer_name} is added successfully!")
+    db_customers[id] = {"details": [name, phone, email]}
+    print(f"New Customer-{new_customer_id} {new_customer_name} is added successfully!")
 
 def add_job():
     # Add a Job to a customer
@@ -170,6 +154,10 @@ def disp_menu():
     print(" 7 - Pay Bill")
     print(" X - eXit (stops the program)")
 
+def back_to_menu(text):
+    if text == "X":
+        return True
+    return False
 
 # ------------ This is the main program ------------------------
 
@@ -190,8 +178,41 @@ while not finish:
     elif response == "3":
         list_parts()
     elif response == "4":
-        add_customer()
+        added = False
+        valid_customer = {"name": None, "phone": None, "email": None}
+        while not added:
+            new_customer_id = next_id(db_customers)
+
+            if valid_customer["name"] is None or valid_customer["name"] is False:
+                if valid_customer["name"] is False:
+                    print("The new customer name is not valid. Please type the name in letters.\n")
+                valid_name, new_customer_name = add_customer_name()
+                valid_customer["name"] = valid_name
+                if back_to_menu((new_customer_name.strip(" ").upper())):
+                    break
+
+            if valid_customer["phone"] is None or valid_customer["phone"] is False:
+                if valid_customer["phone"] is False:
+                    print("The new customer phone number is not valid. Please type the phone number in digit.\n")
+                valid_phone, new_customer_phone = add_customer_phone_number()
+                valid_customer["phone"] = valid_phone
+                if back_to_menu(new_customer_phone.strip(" ").upper()):
+                    break
+
+            if valid_customer["email"] is None or valid_customer["email"] is False:
+                if valid_customer["email"] is False:
+                    print("The new customer email address is not valid. Please type the email in this format 'example@domain.com'\n")
+                valid_email, new_customer_email = add_customer_email()
+                valid_customer["email"] = valid_email
+                if back_to_menu(new_customer_email.strip(" ").upper()):
+                    break
+
+            if False not in valid_customer.values():
+                add_customer(new_customer_id, new_customer_name, new_customer_phone, new_customer_email)
+                added = True
+
     elif response == "5":
+
         add_job()
     elif response == "6":
         bills_to_pay()
