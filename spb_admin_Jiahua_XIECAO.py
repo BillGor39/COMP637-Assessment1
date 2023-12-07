@@ -206,7 +206,7 @@ def find_customer(found):
 
 def add_services(services_added, services, cost):
     list_services()
-    service_to_add = input("Enter service id(or X to return menu): ")
+    service_to_add = input("Enter service id(X to return menu or Enter to next step): ")
     if back_to_menu(service_to_add):
         return services_added, service_to_add, cost
     try:
@@ -230,7 +230,7 @@ def add_services(services_added, services, cost):
 
 def add_parts(parts_added, parts, cost):
     list_parts()
-    part_to_add = input("Enter part id(or X to return menu): ")
+    part_to_add = input("Enter part id(X to return menu or Enter to next step): ")
     if back_to_menu(part_to_add):
         return parts_added, part_to_add, cost
     try:
@@ -282,7 +282,10 @@ def add_job():
 
     if customer_found and services_added and parts_added:
         job_date = datetime.date.today()
-        db_customers[int(customer_id)]["jobs"] = {job_date: [services, parts, cost, False]}
+        try:
+            db_customers[int(customer_id)]["jobs"][job_date] = [services, parts, cost, False]
+        except KeyError:
+            db_customers[int(customer_id)]["jobs"] = {job_date: [services, parts, cost, False]}
         print(f"Customer {customer_id}'s job added successfully!")
 
 
