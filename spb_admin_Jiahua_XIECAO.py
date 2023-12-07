@@ -150,6 +150,12 @@ def validate_customer_email(customer):
         customer["email"] = valid
         return customer, email
 
+def validate_customer_bill(customer_id, date):
+    if date in db_customers[customer_id]["jobs"].keys():
+        return True
+    else:
+        return False
+
 
 def add_customer():
     # Add a customer to the db_customers database, use the next_id to get an id for the customer.
@@ -280,16 +286,23 @@ def add_job():
         print(f"Customer {customer_id}'s job added successfully!")
 
 
-def bills_to_pay():
+def bills_to_pay(customer_id=None):
     display_list = []
-    for customer_id in db_customers.keys():
-        print(customer_id)
+    if customer_id is None:
+        for customer_id in db_customers.keys():
+            name = db_customers[customer_id]["details"][0]
+            phone = db_customers[customer_id]["details"][1]
+            for job_date in db_customers[customer_id]["jobs"].keys():
+                job = db_customers[customer_id]["jobs"][job_date]
+                if job[3] is False:
+                    display_list.append((name, phone, job_date, job[2]))
+    else:
         name = db_customers[customer_id]["details"][0]
         phone = db_customers[customer_id]["details"][1]
-        for job_date in db_customers[customer_id]["jobs"].keys():
-            job = db_customers[customer_id]["jobs"][job_date]
-            if job[3] is False:
-                display_list.append((name, phone, job_date, job[2]))
+        for job_date in db_customers[customer_id]["jobs"]:
+            if db_customers[customer_id]["jobs"][job_date][3] is False:
+                cost = db_customers[customer_id]["jobs"][job_date][2]
+                display_list.append((name, phone, job_date, cost))
 
     format_columns = "{: >15} | {: <10} | {: <12} | {: ^12}"
     print("\nUnpaid bill LIST\n")  # display a heading for the output
@@ -297,7 +310,34 @@ def bills_to_pay():
 
 
 def pay_bill():
-    pass  # REMOVE this line once you have some function code (a function must have one line of code, so this temporary line keeps Python happy so you can run the code)
+    # find customer
+    customer_found = False
+    while not customer_found:
+        customer_found, customer_id = find_customer(customer_found)
+        if back_to_menu(customer_id):
+            break
+
+    if False not in [data[3] for data in db_customers[int(customer_id)]["jobs"].values()]:
+        print(f"Customer{int(customer_id)} {db_customers[int(customer_id)]["details"][0]} no outstanding bill.")
+    else:
+        while True:
+            bills_to_pay(int(customer_id))
+            date_string = input("Enter the bill date to pay:")
+            if back_to_menu(date_string):
+                break
+            try:
+                date_object = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
+                valid = validate_customer_bill(int(customer_id), date_object)
+
+                name = db_customers[int(customer_id)]["details"][0]
+                if valid:
+                    db_customers[int(customer_id)]["jobs"][date_object][3] = True
+                    print(f"Customer {name}'s bill on {date_object} is paid!")
+                    break
+                else:
+                    print(f"Customer {name} doesn't have a bill on {date_object}")
+            except ValueError:
+                print("Enter bill date in this format (year-month-day)")
 
 
 # function to display the menu
