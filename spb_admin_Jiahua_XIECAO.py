@@ -60,7 +60,7 @@ def list_customers():
     # Use col_Customers for display
 
     # Convert the dictionary data into a list that displays the required data fields
-    # initialise an empty list which will be used to pass data for display
+    # initialise an empty list which will be used to pass data for displaya
     display_list = []
     # Iterate over all the customers in the dictionary
     for customer in db_customers.keys():
@@ -85,6 +85,7 @@ def list_parts():
     display_list = []
     for part_id in db_parts.keys():
         display_list.append((part_id, db_parts[part_id][0], db_parts[part_id][1]))
+    display_list.sort(key=lambda data: data[1])
     format_str = "{: <5} | {: ^10} | {: >15}"
     print("\nParts List\n")
     column_output(display_list, col_parts, format_str)
@@ -95,6 +96,7 @@ def list_services():
     display_list = []
     for service_id in db_services.keys():
         display_list.append((service_id, db_services[service_id][0], db_services[service_id][1]))
+    display_list.sort(key=lambda data: data[1])
     format_str = "{: <5} | {: ^20} | {: >15}"
     print("\nServices List\n")
     column_output(display_list, col_services, format_str)
@@ -185,6 +187,7 @@ def add_customer():
 
         if False not in valid_customer.values():
             db_customers[new_customer_id] = {"details": [new_customer_name, new_customer_phone, new_customer_email]}
+            db_customers[new_customer_id]["jobs"] = {}
             customer_added = True
             print(f"New Customer-{new_customer_id} {new_customer_name} is added successfully!")
 
@@ -212,16 +215,12 @@ def add_services(services_added, services, cost):
     try:
         if service_to_add == "":
             services_added = True
-            print(services_added)
         elif int(service_to_add) not in db_services.keys():
             print(f"{service_to_add} can not be found. Please try a valid service id.")
         else:
-            if int(service_to_add) in services:
-                print(f"{db_services[int(service_to_add)][0]} was added before.")
-            else:
-                services += (int(service_to_add),)
-                cost += db_services[int(service_to_add)][1]
-                print(f"{db_services[int(service_to_add)][0]} added successfully!")
+            services += (int(service_to_add),)
+            cost += db_services[int(service_to_add)][1]
+            print(f"{db_services[int(service_to_add)][0]} added successfully!")
         return services_added, services, cost
     except ValueError:
         print(f"{service_to_add} can not be found. Please enter a valid service id")
@@ -239,12 +238,12 @@ def add_parts(parts_added, parts, cost):
         elif int(part_to_add) not in db_parts.keys():
             print(f"{part_to_add} can not be found. Please try a valid service id.")
         else:
-            if int(part_to_add) in parts:
-                print(f"{db_parts[int(part_to_add)][0]} was added before.")
-            else:
-                parts += (int(part_to_add),)
-                cost += db_parts[int(part_to_add)][1]
-                print(f"{db_parts[int(part_to_add)][0]} added successfully!")
+            # if int(part_to_add) in parts:
+            #     print(f"{db_parts[int(part_to_add)][0]} was added before.")
+            # else:
+            parts += (int(part_to_add),)
+            cost += db_parts[int(part_to_add)][1]
+            print(f"{db_parts[int(part_to_add)][0]} added successfully!")
         return parts_added, parts, cost
     except ValueError:
         print(f"{part_to_add} can not be found. Please enter a valid service id")
@@ -282,10 +281,7 @@ def add_job():
 
     if customer_found and services_added and parts_added:
         job_date = datetime.date.today()
-        try:
-            db_customers[int(customer_id)]["jobs"][job_date] = [services, parts, cost, False]
-        except KeyError:
-            db_customers[int(customer_id)]["jobs"] = {job_date: [services, parts, cost, False]}
+        db_customers[int(customer_id)]["jobs"] = {job_date: [services, parts, cost, False]}
         print(f"Customer {customer_id}'s job added successfully!")
 
 
